@@ -1,4 +1,4 @@
-pub mod second;
+//pub mod second;
 use std::mem;
 
 pub struct list{
@@ -7,25 +7,25 @@ pub struct list{
 
 impl List {
     pub fn new() -> Self {
-        List { head: Link::Empty }
+        List { head: None }
     }
 
     pub fn push(&mut self, elem: i32){
         let new_node = Node{
             elem,
-            next: mem::replace(&mut self.head, Link::Empty),
+            next: self.head.take(),
         };
 
-        self.head = Link::More(new_node);
+        self.head = Some(new_node);
     }
 
     pub fn pop(&mut self)->Option<i32>{
         let result;
         match mem::replace(&mut self.head, Link::Empty){
-            Link::Empty => {
+            None => {
                 result = None;
             }
-            Link::More => {
+            Some => {
                 result = Some(node.elem);
                 node.elem = node.next;
             }
@@ -34,10 +34,21 @@ impl List {
     }
 }
 
-enum Link{
-    Empty,
-    More(Box<Node>),
+impl Drop for List{
+    fn drop(&mut self){
+        let cur_link = self.head.take();
+        while let Some(mut boxed_node) = cur_link{
+            cur_link = boxed_node.next.take();
+        }
+    }
 }
+
+//enum Link{
+//    Empty,
+//    More(Box<Node>),
+//}
+
+type Link = Option<Box<Node>>;
 
 struct Node{
     elem: i32,
